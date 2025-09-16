@@ -1,0 +1,221 @@
+
+<div class="modal fade" id="assemblyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog" style="max-width: 80%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fs-1 fw-bold">Crear Asamblea</h5>
+      </div>
+      <div class="modal-body">
+        <div class="">
+          <div class="mb-3">
+            <label for="cbxTipoAsamblea" class="form-label fw-bold final-asterisk">Tipo de Asamblea</label>
+            <select class="form-select form-select-lg" id="cbxTipoAsamblea">
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="nombreAsamblea" class="form-label fw-bold final-asterisk">Nombre de la Asamblea</label>
+            <input class="form-control form-control-lg" type="text" placeholder="Nombre de la Asamblea" id="nombreAsamblea">
+          </div>
+          <div class="d-flex justify-content-end mb-3">
+            <button type="button" class="btn btn-primary" onclick="onAddAssemblyDayHandler()">Agregar día</button>
+          </div>
+          <div class="" id="assembly-days-cnt">
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" onclick="createAssemblyHandler()">Crear</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-target="#assemblyModal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  let tiposAsambleas = null;
+  function onAddAssemblyDayHandler() {
+    $('#assembly-days-cnt').append(getAssemblyDayHtml());
+    attachNumericHandlers();
+    attachIntegerHandlers();
+  }
+  function getAssemblyDayHtml(data) {
+    return `
+      <div class="border border-secondary rounded mb-3 position-relative assembly-day-item">
+        <button type="button" class="btn btn-sm btn-delete-subtle position-absolute d-flex align-items-center justify-content-center" 
+        style="top: 8px; right: 8px;">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="m-3">
+          <div class="d-flex">
+            <div class="mb-3 w-50 me-2">
+              <label for="" class="form-label fw-bold final-asterisk">
+                Fecha
+              </label>
+              <input type="date" class="form-control form-control-lg assembly-day-date">
+            </div>
+            <div class="mb-3 w-50">
+              <label for="" class="form-label fw-bold final-asterisk">
+                Costo total del bus
+              </label>
+              <input type="text" class="form-control form-control-lg numeric assembly-day-transport-total-cost">
+            </div>
+          </div>
+          <div class="d-flex">
+            <div class="mb-3 w-50 me-2">
+              <label for="" class="form-label fw-bold final-asterisk">
+                Total de asientos
+              </label>
+              <input type="text" class="form-control form-control-lg integer assembly-day-total-seats" maxlength="3" +>
+            </div>
+            <div class="mb-3 w-50">
+              <label for="" class="form-label fw-bold final-asterisk">
+                Costo del pasaje
+              </label>
+              <input type="text" class="form-control form-control-lg numeric assembly-day-ticket-cost">
+            </div>
+          </div>           
+        </div>
+      </div>
+    `;
+  }
+  function fillAssemblyCbx(data) {
+    const cbx = $('#cbxTipoAsamblea');
+    cbx.html('<option value="">SELECCIONE</option>');
+    data.forEach(element => {
+      cbx.append(`
+        <option value="${element.CODIGO_TIPO_ASAMBLEA}">${element.NOMBRE_TIPO_ASAMBLEA}</option>
+      `);
+    });
+    $('#cbxTipoAsamblea').prop('selectedIndex', 0);
+  }
+  function getAssemblyDaysData(){
+    const data = [];
+    $('.assembly-day-item').each(function(i, elem) {
+      const e = $(elem);
+      const date = e.find('.assembly-day-date').first().val();
+      const transportTotalCost = e.find('.assembly-day-transport-total-cost').first().val();
+      const busTotalSeats = e.find('.assembly-day-total-seats').first().val();
+      const ticketCost = e.find('.assembly-day-ticket-cost').first().val();
+      data.push({
+        date,
+        transportTotalCost,
+        busTotalSeats,
+        ticketCost
+      });
+    });
+    return {data};
+  }
+  function validateAssemblyDay(day, i) {
+    let isValid = true;
+    if (!day.date) {
+      warningNotification({
+        title: 'Advertencia',
+        message: `Debe ingresar la fecha para el día ${i} de la asamblea`,
+      })
+      isValid = false;
+    }
+    if (!day.transportTotalCost) {
+      warningNotification({
+        title: 'Advertencia',
+        message: `Debe ingresar el costo total de la movilidad para el día ${i} de la asamblea`,
+      })
+      isValid = false;
+    }
+    if (!day.busTotalSeats || day.busTotalSeats === '0') {
+      warningNotification({
+        title: 'Advertencia',
+        message: `Debe ingresar el total de asientos para el día ${i} de la asamblea`,
+      })
+      isValid = false;
+    }
+    if (!day.ticketCost || day.ticketCost === '0.00') {
+      warningNotification({
+        title: 'Advertencia',
+        message: `Debe ingresar el costo del pasaje para el día ${i} de la asamblea`,
+      })
+      isValid = false;
+    }
+    return {
+      isValid
+    };
+  }
+  function getAndValidateAssemblyData() {
+    const data = {
+      assemblyTypeId: $('#cbxTipoAsamblea').val(),
+      name: $('#nombreAsamblea').val().trim()
+    };
+    let isValid = true;
+    if (!data.name) {
+      warningNotification({
+        title: 'Advertencia',
+        message: 'Debe ingresar el nombre de la asamblea',
+      })
+      isValid = false;
+    }
+    if (!data.assemblyTypeId) {
+      warningNotification({
+        title: 'Advertencia',
+        message: 'Debe seleccionar el tipo de asamblea',
+      })
+      isValid = false;
+    }
+    const {
+      data: days
+    } = getAssemblyDaysData();
+
+    days.forEach((day, i) => {
+      const {
+        isValid: isValidDay
+      } = validateAssemblyDay(day, i);
+      if(!isValidDay) isValid = false; 
+    });
+    if (!days.length) {
+      warningNotification({
+        title: 'Advertencia',
+        message: 'Debe ingresar por lo menos un día de asamblea',
+      })
+      isValid = false;
+    }
+    data.days = days;
+    return {
+      data,
+      isValid
+    };
+  }
+  async function createAssemblyHandler() {
+    const {
+      data,
+      isValid
+    } = getAndValidateAssemblyData();
+    console.log({data, isValid});
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    try {
+      await createAssembly(data);
+      setTimeout(() => {
+        Swal.close();
+        modal('assemblyModal').hide();
+        Swal.fire({
+          title: "Exito",
+          text: "Asamblea creada correctamente",
+          icon: "success"
+        });
+      }, 200);
+    } catch (error) {
+      Swal.close();
+    }
+    
+  }
+  
+  $(async function () {
+    tiposAsambleas = await getAssamblyTypes();
+    fillAssemblyCbx(tiposAsambleas);
+  });
+</script>

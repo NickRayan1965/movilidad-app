@@ -1,0 +1,68 @@
+import db from '../db/db.js';
+import * as assemblyDaysService from './assemblyDaysService.js';
+
+export function getActiveAssemblies(congregation_id) {
+  const res = db.prepare(`
+    SELECT
+      ASAMBLEA.id CODIGO_ASAMBLEA,
+      ASAMBLEA.name NOMBRE_ASAMBLEA,
+      ASAMBLEA.type_id CODIGO_TIPO_ASAMBLEA,
+      TIPO_ASAMBLEA.name NOMBRE_TIPO_ASAMBLEA,
+      ASAMBLEA.congregation_id CODIGO_CONGREGACION,
+      CONGREGACION.name NOMBRE_CONGREGACION,
+      ASAMBLEA.created_by CODIGO_USUARIO_CREADOR,
+      USUARIO_CREADOR.fullname NOMBRE_COMPLETO_USUARIO_CREADOR,
+      (
+        SELECT
+          DAY.date
+        FROM assembly_days DAY
+        WHERE DAY.assembly_id = ASAMBLEA.id
+        ORDER BY DAY.date DESC LIMIT 1
+      ) AS ULTIMO_DIA_ASAMBLEA,
+      (
+        SELECT
+          DAY.date
+        FROM assembly_days DAY
+        WHERE DAY.assembly_id = ASAMBLEA.id
+        ORDER BY DAY.date ASC LIMIT 1
+      ) AS PRIMER_DIA_ASAMBLEA
+    FROM assemblies ASAMBLEA
+    LEFT JOIN assembly_types TIPO_ASAMBLEA
+      ON (
+        TIPO_ASAMBLEA.id = ASAMBLEA.type_id
+      )
+    LEFT JOIN congregations CONGREGACION
+      ON (
+        CONGREGACION.id = ASAMBLEA.congregation_id
+      )
+    LEFT JOIN users USUARIO_CREADOR
+      ON (
+        USUARIO_CREADOR.id = ASAMBLEA.created_by
+      )
+    WHERE ASAMBLEA.congregation_id = ?
+  `).all([
+    congregation_id
+  ]);
+  return res;
+}
+export function createAssembly(data, userRequest) {
+  const { 
+    assemblyTypeId,
+    name,
+    days = []
+  } = data;
+  const congregation_id = userRequest.CODIGO_CONGREGACION;
+  const created_by = userRequest.CODIGO_USUARIO;
+  const result = db.prepare(`
+    INSERT INTO assemblies (name, type_id, congregation_id, created_by)
+    VALUES (?, ?, ?, ?)
+  `).run([name, assemblyTypeId, congregation_id, created_by]);
+  const assemblyId = result.lastInsertRowid;
+  days.forEach(day => {
+    assemblyDaysService.createAssemblyDay({
+      ...day,
+      assemblyId
+    });
+  });
+  return { id: assemblyId };
+}

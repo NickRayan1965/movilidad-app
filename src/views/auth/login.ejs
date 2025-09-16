@@ -1,0 +1,96 @@
+<style>
+  .login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e6f8fa;
+    padding: 1rem;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 90%; /* más ancho en móvil */
+    border-radius: 24px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+    border: none;
+    padding: 6.5rem 2rem;
+    background: #fff;
+  }
+  .login-card h4 {
+    font-size: 4.8rem;
+    font-weight: bold;
+  }
+  .form-control {
+    font-size: 2.1rem;
+    padding: 2rem;
+    border-radius: 12px;
+  }
+  .btn-turquesa {
+    background-color: #1abc9c;
+    border: none;
+    font-size: 2.2rem;
+    padding: 0.9rem;
+    border-radius: 12px;
+  }
+  .btn-turquesa:hover {
+    background-color: #16a085;
+  }
+  .form-control:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.25);
+  }
+</style>
+<div class="login-wrapper">
+  <div class="card login-card">
+    <h4 class="text-center mb-4" style="color:#1abc9c;">Bienvenido</h4>
+    <div>
+      <div class="mb-4">
+        <input type="text" class="form-control" id="username" placeholder="Usuario">
+      </div>
+      <div class="mb-4">
+        <input type="password" class="form-control" id="password" placeholder="Contraseña">
+      </div>
+      <button class="btn btn-turquesa w-100 text-white" onclick="login()">Ingresar</button>
+    </div>
+  </div>
+</div>
+<script>
+  async function login() {
+    const loginData = {
+      username: $('#username').val(),
+      password: $('#password').val(),
+    };
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    const res = await fetch('/auth/login', {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+      },
+      body: JSON.stringify(loginData)
+    });
+    if (res.status === 401) {
+      Swal.close();
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Credenciales Inválidas",
+      });
+      return; // corta la ejecución
+    }
+    const resData = await res.json();
+    setTimeout(() => {
+      Swal.close();
+      localStorage.setItem('token', resData.token);
+      window.location.href = '/assemblies/dashboard';
+    }, 100);
+
+  }
+</script>
