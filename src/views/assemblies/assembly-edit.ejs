@@ -1,0 +1,62 @@
+<script src="/js/assembliesApi.js"></script>
+<script src="/js/dateUtils.js"></script>
+
+<div class="standar-wrapper">
+  <div class="card standar-card">
+    <p class="mb-1 fw-bold fs-1 text-start" style="color:#1abc9c;" id="nombreAsamblea">
+    </p>
+    <p class="mb-4 text-end fs-4" id="fechasCnt">
+
+    </p>
+    <div class="standar-container">
+      <ul class="nav nav-tabs" id="day-tabs" role="tablist">
+        
+      </ul>
+      
+      <div class="tab-content mt-3" id="days-content">
+        <div class="tab-pane fade show active" id="home">
+          Contenido del Encabezado 1
+        </div>
+        <div class="tab-pane fade" id="profile">
+          Contenido del Encabezado 2
+        </div>
+        <div class="tab-pane fade" id="contact">
+          Contenido del Encabezado 3
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<script>
+  const assemblyId = "<%= id %>";
+  let assemblyData = null;
+  function fillAssemblyData(assembly) {
+    let html = '';
+    let date = '';
+    const { PRIMER_DIA_ASAMBLEA, ULTIMO_DIA_ASAMBLEA } = assembly;
+    if (PRIMER_DIA_ASAMBLEA) {
+      date += formatReadableDate(PRIMER_DIA_ASAMBLEA);
+    }
+    if (ULTIMO_DIA_ASAMBLEA && ULTIMO_DIA_ASAMBLEA !== PRIMER_DIA_ASAMBLEA) {
+      date += ' - ' + formatReadableDate(ULTIMO_DIA_ASAMBLEA);
+    }
+    $('#nombreAsamblea').html(assembly.NOMBRE_ASAMBLEA);
+    $('#fechasCnt').html(date);
+    assembly.days?.forEach((day, i) => {
+      html += `
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button">
+            ${getWeekDay(day.FECHA)} ${getDayNumber(day.FECHA)}
+          </button>
+        </li>
+      `;
+    });
+    $('#day-tabs').html(html);
+  }
+  $(async function(){
+    assemblyData = await getAssemblyById(assemblyId);
+    fillAssemblyData(assemblyData);
+  })
+
+</script>

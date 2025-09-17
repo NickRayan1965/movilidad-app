@@ -2,29 +2,7 @@
 <script src="/js/assembliesApi.js"></script>
 <script src="/js/dateUtils.js"></script>
 
-<style>
-
-  /* .form-control {
-    font-size: 2.1rem;
-    padding: 2rem;
-    border-radius: 12px;
-  }
-  .btn-turquesa {
-    background-color: #1abc9c;
-    border: none;
-    font-size: 2.2rem;
-    padding: 0.9rem;
-    border-radius: 12px;
-  }
-  .btn-turquesa:hover {
-    background-color: #16a085;
-  }
-  .form-control:focus {
-    border-color: #1abc9c;
-    box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.25);
-  } */
-</style>
-<%- include('../partials/assemblies/new-assembly-modal') %>
+<%- include('../partials/assemblies/new-assembly-modal', {onSave: 'getAssembliesAndFill'}) %>
 
 <div class="standar-wrapper">
   <div class="card standar-card">
@@ -35,8 +13,7 @@
           NUEVO
         </button>
       </div>
-      <div class="mt-3 w-100" id="items-container">
-               
+      <div class="mt-3 w-100" id="items-container" style="max-height:70vh; overflow-y:auto;">
       </div>
     </div>
   </div>
@@ -55,7 +32,7 @@
       if (ULTIMO_DIA_ASAMBLEA && ULTIMO_DIA_ASAMBLEA !== PRIMER_DIA_ASAMBLEA) {
         date += ' - ' + formatReadableDate(ULTIMO_DIA_ASAMBLEA);
       }
-      const itemId = `assembly-item-${assembly.CODIGO_ASAMBLEA}`;
+      const itemId = `assembly-item-${assembly.CODIGO}`;
       e.append(`
         <div class="btn btn-light mb-3 w-100" id="${itemId}">
           <button class="w-100 mb-3 rounded borders py-4 px-3 btn btn-link">
@@ -65,12 +42,15 @@
         </div> 
       `);
       $(`#${itemId}`).on('click', function() {
-        window.location.href = '/assemblies/' + assembly.CODIGO_ASAMBLEA;
+        window.location.href = '/assemblies/edit/' + assembly.CODIGO;
       });
     });
   }
-  $(async function() {
-    assembliesData = await getAssemblies();
+  async function getAssembliesAndFill() {
+    assembliesData = await getAssemblies({getDays: true, getReservations: true});
     fillAssemblies(assembliesData);
+  }
+  $(async function() {
+    await getAssembliesAndFill();
   });
 </script>

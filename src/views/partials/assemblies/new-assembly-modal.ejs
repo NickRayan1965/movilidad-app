@@ -189,6 +189,7 @@
       isValid
     } = getAndValidateAssemblyData();
     console.log({data, isValid});
+    if(!isValid) return;
     Swal.fire({
       title: 'Cargando...',
       text: 'Por favor espera',
@@ -207,6 +208,7 @@
           text: "Asamblea creada correctamente",
           icon: "success"
         });
+        <%= onSave ? onSave.concat('()') : 'return;'%>
       }, 200);
     } catch (error) {
       Swal.close();
