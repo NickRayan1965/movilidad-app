@@ -47,7 +47,7 @@
     return res.json();
   }
 
-  function warningNotification({title, message}) {
+  function warningNotification({title = 'Advertencia', message}) {
     toastr.warning(message, title, {
       closeButton: true,
       progressBar: true,

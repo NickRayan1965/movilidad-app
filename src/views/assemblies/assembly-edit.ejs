@@ -23,6 +23,7 @@
     </div>
   </div>
 </div>
+
 <script>
   const assemblyId = "<%= id %>";
   let assemblyData = null;
@@ -52,11 +53,12 @@
     const paymentInfo = `Total pagado: S/.${totalPaid.toFixed(2)} de S/.${assemblyTotalCost.toFixed(2)}`;
     $('#payment-info').html(paymentInfo);
   }
+  function getReservationContent() {}
+  function getSelectedDay () {}
   function getDayHtmlContent({day, idContent, i}) {
     const { CODIGO } = day;
-
     let html = `
-      <div class="tab-pane fade ${i === 0 ? 'show active' : ''}" id="${idContent}" role="tabpanel" aria-labelledby="tab-header-${CODIGO}">
+      <div class="day-tab tab-pane fade ${i === 0 ? 'show active' : ''}" id="${idContent}" day-id = "${day.CODIGO}" role="tabpanel" aria-labelledby="tab-header-${CODIGO}">
         <p class="fs-4 text-end">
           Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS).toFixed()}
         </p>
@@ -99,6 +101,29 @@
     const tab = new bootstrap.Tab(document.querySelector(`#tab-header-${assembly.days[0].CODIGO}`)); 
     tab.show();  // Mostrar la primera pestaña
     fillAssemblyInfo(assembly);
+  }
+  function getAndValidateReservationData () {
+    const data = {
+      representative: $('#representative').val().trim(),
+      ticketCount: $('#ticketCount').val(),
+      amountPaid: $('#amountPaid').val()
+    };
+    let isValid = true;
+    if (!data.representative) {
+      warningNotification({
+        message: 'Debe ingresar al representante de la reservación',
+      });
+      isValid = false;
+    }
+    if (!data.ticketCount || data.ticketCount === '0') {
+      warningNotification({
+        message: 'Debe ingresar la cantidad de pasajes a separar',
+      });
+      isValid = false;
+    } else if ()
+  }
+  function createReservationHandler() {
+
   }
   $(async function(){
     assemblyData = await getAssemblyById(assemblyId);
