@@ -3,26 +3,21 @@
 
 <div class="standar-wrapper">
   <div class="card standar-card">
+    <p id="assemblyType" class="text-end fs-4 mb-1 fw-bold">
+
+    </p>
     <p class="mb-1 fw-bold fs-1 text-start" style="color:#1abc9c;" id="nombreAsamblea">
     </p>
-    <p class="mb-4 text-end fs-4" id="fechasCnt">
+    <p id="payment-info" class="fw-bold fs-4 text-end"></p>
+    <p class="mb-4 text-end fs-4 fw-bold" id="fechasCnt">
 
     </p>
     <div class="standar-container">
       <ul class="nav nav-tabs" id="day-tabs" role="tablist">
-        
       </ul>
       
       <div class="tab-content mt-3" id="days-content">
-        <div class="tab-pane fade show active" id="home">
-          Contenido del Encabezado 1
-        </div>
-        <div class="tab-pane fade" id="profile">
-          Contenido del Encabezado 2
-        </div>
-        <div class="tab-pane fade" id="contact">
-          Contenido del Encabezado 3
-        </div>
+
       </div>
       
     </div>
@@ -31,8 +26,50 @@
 <script>
   const assemblyId = "<%= id %>";
   let assemblyData = null;
+  function getDayTotalPaid(day) {
+    let total = new Decimal(0);
+    day.reservations?.forEach(reservation => {
+      const amountPaid = new Decimal(reservation.CANTIDAD_PAGADA);
+      total = total.plus(amountPaid);
+    });
+    return total;
+  }
+  function getDayTotalFreeSeats(day) {
+    let totalReserved = new Decimal(0);
+    day.reservations?.forEach(reservation => {
+      totalReserved = totalReserved.plus(reservation.CANTIDAD_PASAJES);
+    });
+    return new Decimal(day.TOTAL_ASIENTOS).minus(totalReserved);
+  }
+  function fillAssemblyInfo(assembly){
+    let assemblyTotalCost = new Decimal(0);
+    let totalPaid = new Decimal(0);
+    assembly.days?.forEach(day => {
+      const busTotalCost = new Decimal(day.COSTO_TOTAL_BUS);
+      assemblyTotalCost = assemblyTotalCost.plus(busTotalCost);
+      totalPaid = totalPaid.plus(getDayTotalPaid(day));
+    });
+    const paymentInfo = `Total pagado: S/.${totalPaid.toFixed(2)} de S/.${assemblyTotalCost.toFixed(2)}`;
+    $('#payment-info').html(paymentInfo);
+  }
+  function getDayHtmlContent({day, idContent, i}) {
+    const { CODIGO } = day;
+
+    let html = `
+      <div class="tab-pane fade ${i === 0 ? 'show active' : ''}" id="${idContent}" role="tabpanel" aria-labelledby="tab-header-${CODIGO}">
+        <p class="fs-4 text-end">
+          Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS).toFixed()}
+        </p>
+        <p class="fs-4 text-end">
+          Total de asientos libres: ${getDayTotalFreeSeats(day)} de ${day.TOTAL_ASIENTOS}
+        </p>
+      </div>
+    `;
+    return html;
+  }
   function fillAssemblyData(assembly) {
-    let html = '';
+    let htmlHeader = '';
+    let htmlContent = '';
     let date = '';
     const { PRIMER_DIA_ASAMBLEA, ULTIMO_DIA_ASAMBLEA } = assembly;
     if (PRIMER_DIA_ASAMBLEA) {
@@ -43,16 +80,25 @@
     }
     $('#nombreAsamblea').html(assembly.NOMBRE_ASAMBLEA);
     $('#fechasCnt').html(date);
+    $('#assemblyType').html(assembly.NOMBRE_TIPO_ASAMBLEA);
     assembly.days?.forEach((day, i) => {
-      html += `
+      const {CODIGO,FECHA} = day;
+      const idContent = `tab-content-${CODIGO}`;
+      htmlHeader += `
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button">
-            ${getWeekDay(day.FECHA)} ${getDayNumber(day.FECHA)}
+          <button class="fs-4 nav-link ${i === 0 ? 'active' : ''}" id="tab-header-${CODIGO}" data-bs-toggle="tab" data-bs-target="#${idContent}" type="button">
+            ${getWeekDay(FECHA)} ${getDayNumber(FECHA)} de ${getMonthName(FECHA)}
           </button>
         </li>
       `;
+      // Generar contenido para las pestañas
+      htmlContent += getDayHtmlContent({day, idContent, i});
     });
-    $('#day-tabs').html(html);
+    $('#day-tabs').html(htmlHeader);
+    $('#days-content').html(htmlContent);
+    const tab = new bootstrap.Tab(document.querySelector(`#tab-header-${assembly.days[0].CODIGO}`)); 
+    tab.show();  // Mostrar la primera pestaña
+    fillAssemblyInfo(assembly);
   }
   $(async function(){
     assemblyData = await getAssemblyById(assemblyId);

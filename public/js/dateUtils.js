@@ -19,3 +19,13 @@ function getDayNumber(dateStr) {
   if (isNaN(date.getTime())) return '';
   return date.getDate();
 }
+function getMonthName(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  const meses = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  return meses[date.getMonth()];
+}
