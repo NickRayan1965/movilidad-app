@@ -41,7 +41,7 @@
   }
 </style>
 <div class="login-wrapper">
-  <div class="card login-card">
+  <div class="card login-card" id="loginForm">
     <h4 class="text-center mb-4" style="color:#1abc9c;">Bienvenido</h4>
     <div>
       <div class="mb-4">
@@ -93,4 +93,9 @@
     }, 100);
 
   }
+  $('#loginForm').on('keypress', function(e) {
+    if (e.which === 13) { // 13 es la tecla Enter
+      login(); // Llama a tu función
+    }
+  });
 </script>

@@ -1,6 +1,16 @@
 <script src="/js/assembliesApi.js"></script>
 <script src="/js/dateUtils.js"></script>
+<style>
+  .nav-link.active {
+    background-color: #007bff;  /* color de fondo más visible */
+    font-weight: bold;          /* texto en negrita */
+    border-radius: 0.5rem;      /* bordes redondeados (opcional) */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* sombra sutil */
+    transition: all 0.3s ease;  /* animación suave */
+  }
 
+</style>
+<%- include('../partials/reservations/new-reservation-modal') %>
 <div class="standar-wrapper">
   <div class="card standar-card">
     <p id="assemblyType" class="text-end fs-4 mb-1 fw-bold">
@@ -10,8 +20,8 @@
     </p>
     <p id="payment-info" class="fw-bold fs-4 text-end"></p>
     <p class="mb-4 text-end fs-4 fw-bold" id="fechasCnt">
-
     </p>
+    
     <div class="standar-container">
       <ul class="nav nav-tabs" id="day-tabs" role="tablist">
       </ul>
@@ -54,17 +64,36 @@
     $('#payment-info').html(paymentInfo);
   }
   function getReservationContent() {}
-  function getSelectedDay () {}
+  function getSelectedDay () {
+    $('.day-tab ').each((i, e) => {
+      const elem = $(e);
+      if (elem.hasClass('active')) {
+        const dayId = elem.attr('day-id');
+        return assemblyData.days.find(day => day.CODIGO == dayId);
+      }
+    });
+  }
   function getDayHtmlContent({day, idContent, i}) {
     const { CODIGO } = day;
     let html = `
       <div class="day-tab tab-pane fade ${i === 0 ? 'show active' : ''}" id="${idContent}" day-id = "${day.CODIGO}" role="tabpanel" aria-labelledby="tab-header-${CODIGO}">
-        <p class="fs-4 text-end">
-          Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS).toFixed()}
-        </p>
-        <p class="fs-4 text-end">
-          Total de asientos libres: ${getDayTotalFreeSeats(day)} de ${day.TOTAL_ASIENTOS}
-        </p>
+        <div class="d-flex">
+          <div class="col-6 d-flex align-items-center">
+            <button type="button" class="btn btn-primary" onclick="onAddReservacionClick()">
+              <i class="fa-solid fa-plus"></i>
+              Reservación
+            </button>
+          </div>
+          <div class="col-6">
+            <p class="fs-4 text-end">
+              Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS).toFixed()}
+            </p>
+            <p class="fs-4 text-end">
+              Total de asientos libres: ${getDayTotalFreeSeats(day)} de ${day.TOTAL_ASIENTOS}
+            </p>
+          </dvi>
+        </div>
+        
       </div>
     `;
     return html;
@@ -103,11 +132,14 @@
     fillAssemblyInfo(assembly);
   }
   function getAndValidateReservationData () {
+    const day = getSelectedDay();
+    const freeSeats = getDayTotalFreeSeats(day);
     const data = {
       representative: $('#representative').val().trim(),
       ticketCount: $('#ticketCount').val(),
       amountPaid: $('#amountPaid').val()
     };
+    data.amountPaid = data.amountPaid ? data.amountPaid : '0.00';
     let isValid = true;
     if (!data.representative) {
       warningNotification({
@@ -120,10 +152,20 @@
         message: 'Debe ingresar la cantidad de pasajes a separar',
       });
       isValid = false;
-    } else if ()
+    } else if (new Decimal(data.ticketCount).greaterThan(freeSeats)){
+      warningNotification({
+        message: 'La cantidad de asientos ingresada supera la cantidad disponible: '.concat(freeSeats),
+      });
+      isValid = false;
+    }
+    return {
+      data,
+      isValid
+    };
   }
-  function createReservationHandler() {
-
+  function onAddReservacionClick() {
+    modal('reservationModal').show();
+    cleanReservationForm();
   }
   $(async function(){
     assemblyData = await getAssemblyById(assemblyId);

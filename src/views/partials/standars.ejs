@@ -68,7 +68,13 @@
     }
   }
   function modal(id) {
-    return bootstrap.Modal.getInstance(document.getElementById(id));
+    const modalElement = document.getElementById(id);
+    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+    if (!modalInstance) {
+      modalInstance = new bootstrap.Modal(modalElement);
+    }
+    return modalInstance;
   }
   function attachNumericHandlers() {
     // limpiar eventos previos

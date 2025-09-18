@@ -10,17 +10,19 @@
             <label for="representative" class="form-label fw-bold final-asterisk">Representante</label>
             <input class="form-control form-control-lg" type="text" placeholder="Representante de la reservación" id="representative">
           </div>
-          <div class="mb-3 w-50 me-2">
-            <label for="" class="form-label fw-bold final-asterisk">
-              Cantidad de pasajes
-            </label>
-            <input type="text" class="form-control form-control-lg integer" maxlength="3" id="ticketCount">
-          </div>
-          <div class="mb-3 w-50 me-2">
-            <label for="" class="form-label fw-bold final-asterisk">
-              Cantidad inicial pagada
-            </label>
-            <input type="text" class="form-control form-control-lg integer" maxlength="6" id="amountPaid">
+          <div class="d-flex">
+            <div class="mb-3 w-50 me-2">
+              <label for="" class="form-label fw-bold final-asterisk">
+                Cantidad de pasajes
+              </label>
+              <input type="text" class="form-control form-control-lg integer" maxlength="3" id="ticketCount" value="1">
+            </div>
+            <div class="mb-3 w-50 me-2">
+              <label for="" class="form-label fw-bold final-asterisk">
+                Cantidad inicial pagada
+              </label>
+              <input type="text" class="form-control form-control-lg integer" maxlength="6" id="amountPaid" value="0.00">
+            </div>
           </div>
         </div>
       </div>
@@ -34,7 +36,7 @@
 <script>
   function cleanReservationForm(){
     $('#representative').val('');
-    $('#ticketCount').val('');
-    $('#amountPaid').val();
+    $('#ticketCount').val('1');
+    $('#amountPaid').val('0.00');
   }
 </script>
