@@ -99,14 +99,16 @@ function fillReservations({days, daysFromWhere, params}) {
   `;
   const reservationsFromWhere = `
     FROM reservations RESERVACION
-    WHERE RESERVACION.id IN (
+    WHERE RESERVACION.assembly_day_id IN (
       SELECT
         DAY.Id
       ${daysFromWhere}
     );
   `;
   const reservationsQuery = selectReservations.concat(reservationsFromWhere);
+  console.log({reservationsQuery});
   const reservations = db.prepare(reservationsQuery).all(params);
+  console.log({reservations});
   mapReservationsOnDays(days, reservations);
 }
 function mapReservationsOnDays(days, reservations){

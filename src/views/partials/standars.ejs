@@ -47,6 +47,49 @@
     return res.json();
   }
 
+  async function putData(url = "", data = {}) {
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+      },
+      body: JSON.stringify(data)
+    });
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
+      return;
+    }
+    if (res.status === 500) {
+      toastr.error("Ocurrió un error en el servidor");
+      throw new Error(`Error ${res.status}`);
+      return;
+    }
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    return res.json();
+  }
+  async function deleteData(url = "") {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+      }
+    });
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
+      return;
+    }
+    if (res.status === 500) {
+      toastr.error("Ocurrió un error en el servidor");
+      throw new Error(`Error ${res.status}`);
+      return;
+    }
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    return res.json();
+  }
   function warningNotification({title = 'Advertencia', message}) {
     toastr.warning(message, title, {
       closeButton: true,
@@ -75,6 +118,19 @@
       modalInstance = new bootstrap.Modal(modalElement);
     }
     return modalInstance;
+  }
+  function loading(){
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
+  function stopLoading() {
+    Swal.close();
   }
   function attachNumericHandlers() {
     // limpiar eventos previos
@@ -118,7 +174,8 @@
     $('.integer').on('input.integer', function () {
       let val = $(this).val();
       val = val.replace(/[^0-9]/g, ''); // elimina todo lo que no sea dígito
-      $(this).val(val);
+      let num = new Decimal(val);
+      $(this).val(num.toString());
     });
   }
 

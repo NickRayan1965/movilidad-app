@@ -1,4 +1,6 @@
 <script src="/js/assembliesApi.js"></script>
+<script src="/js/reservationsApi.js"></script>
+
 <script src="/js/dateUtils.js"></script>
 <style>
   .nav-link.active {
@@ -21,7 +23,43 @@
     <p id="payment-info" class="fw-bold fs-4 text-end"></p>
     <p class="mb-4 text-end fs-4 fw-bold" id="fechasCnt">
     </p>
-    
+    <div class="d-flex p-3 border border-2 border-dark rounded-5 bg-warning-subtle justify-content-between">
+      <div class="d-flex d-flex align-items-center">
+        <div class="border border-2 border-dark rounded-circle d-flex align-items-center bg-white justify-content-center" style="height: 85px; width: 85px;">
+          <span class="fs-3 fw-bold">100</span>
+        </div>
+        <span class="fs-3 ms-3 fw-bold">FAMILIA BETETA</span>
+      </div>
+      <div class="d-flex">
+        <div class="me-4">
+          <div class="d-flex mb-3">
+            <button type="button" class="btn-success rounded-4" style="height: 50px; width: 50px;">
+              <i class="fa-solid fa-plus"></i>
+              <i class="fa-solid fa-person"></i>
+            </button>
+            <button type="button" class="btn-success rounded-4 ms-3" style="height: 50px; width: 50px;">
+              <i class="fa-solid fa-minus"></i>
+              <i class="fa-solid fa-person"></i>
+            </button>            
+          </div>
+          <div class="d-flex">
+            <button type="button" class="btn-success rounded-4" style="height: 65px; width: 65px;">
+              <i class="fa-solid fa-plus"></i>
+              <i class="fa-solid fa-money-bill"></i>
+            </button>
+            <button type="button" class="btn-success rounded-4 ms-3" style="height: 65px; width: 65px;">
+              <i class="fa-solid fa-minus"></i>
+              <i class="fa-solid fa-money-bill"></i>
+            </button>            
+          </div>
+        </div>
+        <div class="d-flex justify-content-center align-items-center">
+          <button type="button" class="btn btn-danger ms-3">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="standar-container">
       <ul class="nav nav-tabs" id="day-tabs" role="tablist">
       </ul>
@@ -65,14 +103,22 @@
   }
   function getReservationContent() {}
   function getSelectedDay () {
-    $('.day-tab ').each((i, e) => {
+    let day = null;
+    $('.day-tab').each((i, e) => {
       const elem = $(e);
       if (elem.hasClass('active')) {
         const dayId = elem.attr('day-id');
-        return assemblyData.days.find(day => day.CODIGO == dayId);
+        day = assemblyData.days.find(day => day.CODIGO == dayId);
       }
     });
+    return day;
   }
+  function getReservationContent(reservation) {
+    let html = `
+      
+    `;
+  }
+
   function getDayHtmlContent({day, idContent, i}) {
     const { CODIGO } = day;
     let html = `
@@ -133,11 +179,13 @@
   }
   function getAndValidateReservationData () {
     const day = getSelectedDay();
+    console.log({day});
     const freeSeats = getDayTotalFreeSeats(day);
     const data = {
       representative: $('#representative').val().trim(),
       ticketCount: $('#ticketCount').val(),
-      amountPaid: $('#amountPaid').val()
+      amountPaid: $('#amountPaid').val(),
+      assemblyDayId: day.CODIGO,
     };
     data.amountPaid = data.amountPaid ? data.amountPaid : '0.00';
     let isValid = true;
@@ -166,6 +214,25 @@
   function onAddReservacionClick() {
     modal('reservationModal').show();
     cleanReservationForm();
+  }
+  async function createReservationHandler() {
+    const {
+      data,
+      isValid
+    } = getAndValidateReservationData();
+    if(!isValid) return;
+    loading();
+    await createReservation(data);
+    assemblyData = await getAssemblyById(assemblyId);
+    fillAssemblyData(assemblyData);
+    setTimeout(() => {
+      stopLoading();
+      Swal.fire({
+        title: "Exito",
+        text: "Reservación creada correctamente",
+        icon: "success"
+      });
+    }, 200);
   }
   $(async function(){
     assemblyData = await getAssemblyById(assemblyId);

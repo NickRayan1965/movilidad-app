@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 config();
 import authRoutes from "./routes/authRoute.js";
 import assembliesRoutes from './routes/assembliesRoute.js';
+import reservationsRoutes from './routes/reservationRoute.js';
 import expressLayouts from "express-ejs-layouts";
 import assemblyTypesRoutes from './routes/assemblyTypesRoute.js';
 import path from "path";
@@ -22,6 +23,7 @@ app.set("layout", "layouts/main"); // layout por defecto
 app.use('/auth', authRoutes);
 app.use('/assemblies', assembliesRoutes);
 app.use('/assemblyTypes', assemblyTypesRoutes);
+app.use('/reservations', reservationsRoutes);
 app.use((req, res) => {
   res.redirect('/auth/login'); // o donde quieras
 });
