@@ -23,43 +23,7 @@
     <p id="payment-info" class="fw-bold fs-4 text-end"></p>
     <p class="mb-4 text-end fs-4 fw-bold" id="fechasCnt">
     </p>
-    <div class="d-flex p-3 border border-2 border-dark rounded-5 bg-warning-subtle justify-content-between">
-      <div class="d-flex d-flex align-items-center">
-        <div class="border border-2 border-dark rounded-circle d-flex align-items-center bg-white justify-content-center" style="height: 85px; width: 85px;">
-          <span class="fs-3 fw-bold">100</span>
-        </div>
-        <span class="fs-3 ms-3 fw-bold">FAMILIA BETETA</span>
-      </div>
-      <div class="d-flex">
-        <div class="me-4">
-          <div class="d-flex mb-3">
-            <button type="button" class="btn-success rounded-4" style="height: 50px; width: 50px;">
-              <i class="fa-solid fa-plus"></i>
-              <i class="fa-solid fa-person"></i>
-            </button>
-            <button type="button" class="btn-success rounded-4 ms-3" style="height: 50px; width: 50px;">
-              <i class="fa-solid fa-minus"></i>
-              <i class="fa-solid fa-person"></i>
-            </button>            
-          </div>
-          <div class="d-flex">
-            <button type="button" class="btn-success rounded-4" style="height: 65px; width: 65px;">
-              <i class="fa-solid fa-plus"></i>
-              <i class="fa-solid fa-money-bill"></i>
-            </button>
-            <button type="button" class="btn-success rounded-4 ms-3" style="height: 65px; width: 65px;">
-              <i class="fa-solid fa-minus"></i>
-              <i class="fa-solid fa-money-bill"></i>
-            </button>            
-          </div>
-        </div>
-        <div class="d-flex justify-content-center align-items-center">
-          <button type="button" class="btn btn-danger ms-3">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    </div>
+    
     <div class="standar-container">
       <ul class="nav nav-tabs" id="day-tabs" role="tablist">
       </ul>
@@ -75,6 +39,18 @@
 <script>
   const assemblyId = "<%= id %>";
   let assemblyData = null;
+  let reservationsMap = {};
+  let daysMap = {};
+  function mapReservations(assembly) {
+    reservationsMap = {};
+    daysMap = {};
+    assembly.days?.forEach(day => {
+      daysMap[day.CODIGO] = day;
+      day.reservations?.forEach(reservation => {
+        reservationsMap[reservation.CODIGO] = reservation;
+      });
+    });
+  }
   function getDayTotalPaid(day) {
     let total = new Decimal(0);
     day.reservations?.forEach(reservation => {
@@ -114,8 +90,52 @@
     return day;
   }
   function getReservationContent(reservation) {
+    const day = daysMap[reservation.CODIGO_DIA_ASAMBLEA];
+    const total = new Decimal(reservation.CANTIDAD_PASAJES).mul(day.COSTO_PASAJE).toFixed(2);
+    
     let html = `
-      
+    <div class="py-3 px-3 border border-2 border-dark rounded-5 bg-warning-subtle ">
+      <div class="d-flex justify-content-between">
+        <div class="d-flex d-flex align-items-center">
+          <div class="border border-2 border-dark rounded-circle d-flex align-items-center bg-white justify-content-center" style="height: 85px; width: 85px;">
+            <span class="fs-3 fw-bold">${reservation.CANTIDAD_PASAJES}</span>
+          </div>
+          <div class="d-flex flex-column align-items-center">
+            <div class="fs-3 ms-3 fw-bold">${reservation.REPRESENTANTE}</div>
+            <div class="d-flex justify-content-end fs-5">
+              <div class="me-1 fw-semibold">S/.${reservation.CANTIDAD_PAGADA} DE S/.${total} pagados</div> | <div class="fw-bold ms-1">S/.90 pendiente</div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex">
+          <div class="me-3"> 
+            <div class="d-flex mb-2">
+              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+                <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
+              </button>
+              <button type="button" class="ms-3 btn btn-danger rounded-4 d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+                <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
+              </button>            
+            </div>
+            <div class="d-flex">
+              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+                <i class="fa-solid fa-plus fs-4 me-1"></i>
+                <i class="fa-solid fa-person fs-4"></i>
+              </button>
+              <button type="button" class="ms-3 btn btn-danger rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+                <i class="fa-solid fa-minus fs-5 me-1"></i>
+                <i class="fa-solid fa-person fs-4"></i>
+              </button>            
+            </div>
+          </div>
+          <div class="d-flex justify-content-center align-items-center border-start">
+            <button type="button" class="btn btn-danger ms-3">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>   
+    </div>
     `;
   }
 
@@ -224,6 +244,7 @@
     loading();
     await createReservation(data);
     assemblyData = await getAssemblyById(assemblyId);
+    mapReservations(assemblyData);
     fillAssemblyData(assemblyData);
     setTimeout(() => {
       stopLoading();
@@ -234,8 +255,12 @@
       });
     }, 200);
   }
-  $(async function(){
+  async function getAssemblyByIdImpl() {
     assemblyData = await getAssemblyById(assemblyId);
+    mapReservations(assemblyData);
+  }
+  $(async function(){
+    await getAssemblyByIdImpl();
     fillAssemblyData(assemblyData);
   })
 
