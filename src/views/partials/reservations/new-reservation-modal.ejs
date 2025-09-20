@@ -33,10 +33,78 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="reservationAmountHandlerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog" style="max-width: 60%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold display-1 text-center w-100" id="reservationAmountHandlerTitle">
+          <span class="add-payment">
+            Añadir pago
+          </span>
+          <span class="return-payment">
+            Devolver dinero
+          </span>
+        </h5>
+      </div>
+      <div class="modal-body">
+        <div class="w-100 d-flex align-items-center justify-content-center">
+          <i class="fa-solid fa-minus display-1 me-1 return-payment"></i>
+          <i class="fa-solid fa-plus display-1 me-1 add-payment"></i>
+          <input type="text" class="numeric form-control" style="height: 150px; width: 350px; font-size: 4.5rem;" maxlength="6" id="amountReservation">
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="d-flex justify-content-center align-items-center btn btn-success me-3 rounded-5" style="font-size: 4.5rem; width: 100px; height: 100px;" onclick="onAmountPaidModifiedClick()">
+          <i class="fa-solid fa-check text-white"></i>
+        </button>
+        <button type="button" class="d-flex justify-content-center align-items-center btn btn-danger rounded-5" data-bs-dismiss="modal" data-bs-target="#reservationAmountHandlerModal" style="font-size: 4.5rem; width: 100px; height: 100px;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="reservationPassengersHandlerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog" style="max-width: 60%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold display-1 text-center w-100">
+          <span class="add-passenger">
+            Añadir pasajeros
+          </span>
+          <span class="remove-passenger">
+            Remover pasajeros
+          </span>
+        </h5>
+      </div>
+      <div class="modal-body">
+        <div class="w-100 d-flex align-items-center justify-content-center">
+          <i class="fa-solid fa-minus display-1 me-1 remove-passenger"></i>
+          <i class="fa-solid fa-plus display-1 me-1 add-passenger"></i>
+          <input type="text" class="integer form-control" style="height: 150px; width: 350px; font-size: 4.5rem;" maxlength="3" id="passengersQuantity">
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="d-flex justify-content-center align-items-center btn btn-success me-3 rounded-5" style="font-size: 4.5rem; width: 100px; height: 100px;" onclick="onPasssengerQuantityModifiedClick()">
+          <i class="fa-solid fa-check text-white"></i>
+        </button>
+        <button type="button" class="d-flex justify-content-center align-items-center btn btn-danger rounded-5" data-bs-dismiss="modal" data-bs-target="#reservationPassengersHandlerModal" style="font-size: 4.5rem; width: 100px; height: 100px;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
   function cleanReservationForm(){
     $('#representative').val('');
     $('#ticketCount').val('1');
     $('#amountPaid').val('0.00');
+  }
+  function cleanAmountReservationForm() {
+    $('#amountReservation').val('');
+  }
+  function cleanPassengersReservationForm() {
+    $('#passengersQuantity').val('');
   }
 </script>

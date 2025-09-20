@@ -6,6 +6,6 @@ async function deleteReservationById(id){
   return await deleteData('/reservations/'.concat(id));
 }
 
-async function updateReservation(data){
-  return await putData('/reservations', data);
+async function updateReservation(id, data){
+  return await putData(`/reservations/${id}`, data);
 }

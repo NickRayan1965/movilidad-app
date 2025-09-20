@@ -39,6 +39,8 @@
 <script>
   const assemblyId = "<%= id %>";
   let assemblyData = null;
+  let selectedReservation = null;
+  let modificationMode = null; //A,R ADD OR RETURN
   let reservationsMap = {};
   let daysMap = {};
   function mapReservations(assembly) {
@@ -54,7 +56,7 @@
   function getDayTotalPaid(day) {
     let total = new Decimal(0);
     day.reservations?.forEach(reservation => {
-      const amountPaid = new Decimal(reservation.CANTIDAD_PAGADA);
+      const amountPaid = new Decimal(reservation.CANTIDAD_PAGADA ?? 0);
       total = total.plus(amountPaid);
     });
     return total;
@@ -62,7 +64,7 @@
   function getDayTotalFreeSeats(day) {
     let totalReserved = new Decimal(0);
     day.reservations?.forEach(reservation => {
-      totalReserved = totalReserved.plus(reservation.CANTIDAD_PASAJES);
+      totalReserved = totalReserved.plus(reservation.CANTIDAD_PASAJES ?? 0);
     });
     return new Decimal(day.TOTAL_ASIENTOS).minus(totalReserved);
   }
@@ -77,7 +79,6 @@
     const paymentInfo = `Total pagado: S/.${totalPaid.toFixed(2)} de S/.${assemblyTotalCost.toFixed(2)}`;
     $('#payment-info').html(paymentInfo);
   }
-  function getReservationContent() {}
   function getSelectedDay () {
     let day = null;
     $('.day-tab').each((i, e) => {
@@ -91,38 +92,45 @@
   }
   function getReservationContent(reservation) {
     const day = daysMap[reservation.CODIGO_DIA_ASAMBLEA];
-    const total = new Decimal(reservation.CANTIDAD_PASAJES).mul(day.COSTO_PASAJE).toFixed(2);
-    
+    const freeSeats = getDayTotalFreeSeats(day);
+    const seats = new Decimal(reservation.CANTIDAD_PASAJES ?? 0);
+    const total = seats.mul(day.COSTO_PASAJE ?? 0).toFixed(2);
+    const amountPaid = new Decimal(reservation.CANTIDAD_PAGADA ?? 0);
+    const pending = new Decimal(total).minus(amountPaid).toFixed(2);
+    const nothingPending = pending === '0.00';
+    const noSeatsFree = freeSeats.trunc().toString() === '0';
+    const noUsedSeats = seats.trunc().toString() === '0';
+    const noAmountPaid = amountPaid.toFixed(2) === '0.00';
     let html = `
-    <div class="py-3 px-3 border border-2 border-dark rounded-5 bg-warning-subtle ">
+    <div class="py-3 px-3 border border-2 border-dark rounded-5 bg-${pending === '0.00' ? 'success' : 'warning'}-subtle w-100 mb-3">
       <div class="d-flex justify-content-between">
         <div class="d-flex d-flex align-items-center">
           <div class="border border-2 border-dark rounded-circle d-flex align-items-center bg-white justify-content-center" style="height: 85px; width: 85px;">
-            <span class="fs-3 fw-bold">${reservation.CANTIDAD_PASAJES}</span>
+            <span class="fs-3 fw-bold">${reservation.CANTIDAD_PASAJES ?? '0'}</span>
           </div>
-          <div class="d-flex flex-column align-items-center">
+          <div class="d-flex flex-column align-items-center ms-3">
             <div class="fs-3 ms-3 fw-bold">${reservation.REPRESENTANTE}</div>
             <div class="d-flex justify-content-end fs-5">
-              <div class="me-1 fw-semibold">S/.${reservation.CANTIDAD_PAGADA} DE S/.${total} pagados</div> | <div class="fw-bold ms-1">S/.90 pendiente</div>
+              <div class="me-1 fw-semibold">S/.${reservation.CANTIDAD_PAGADA ?? '0.00'} DE S/.${total} pagados</div> | <div class="fw-bold ms-1">S/.${pending} pendiente</div>
             </div>
           </div>
         </div>
         <div class="d-flex">
           <div class="me-3"> 
             <div class="d-flex mb-2">
-              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" ${nothingPending ? 'disabled' : ''} style="height: 50px; width: 50px;" onclick="onAddAmountClick(${reservation.CODIGO})">
                 <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
               </button>
-              <button type="button" class="ms-3 btn btn-danger rounded-4 d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+              <button type="button" class="ms-3 btn btn-danger rounded-4 d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onReturnAmountClick(${reservation.CODIGO})" ${noAmountPaid ? 'disabled': ''}>
                 <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
               </button>            
             </div>
             <div class="d-flex">
-              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onAddPassengersClick(${reservation.CODIGO})" ${noSeatsFree ? 'disabled' : ''}>
                 <i class="fa-solid fa-plus fs-4 me-1"></i>
                 <i class="fa-solid fa-person fs-4"></i>
               </button>
-              <button type="button" class="ms-3 btn btn-danger rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;">
+              <button type="button" class="ms-3 btn btn-danger rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onRemovePassengersClick(${reservation.CODIGO})" ${noUsedSeats ? 'disabled': ''}>
                 <i class="fa-solid fa-minus fs-5 me-1"></i>
                 <i class="fa-solid fa-person fs-4"></i>
               </button>            
@@ -137,9 +145,179 @@
       </div>   
     </div>
     `;
+    return html;
+  }
+  
+  function onAddAmountClick(reservationId) {
+    selectedReservation = reservationsMap[reservationId];
+    modificationMode = 'A';
+    $('.add-payment').removeClass('d-none');
+    $('.return-payment').addClass('d-none');
+    cleanAmountReservationForm();
+    modal('reservationAmountHandlerModal').show();
+  }
+  function onReturnAmountClick(reservationId) {
+    selectedReservation = reservationsMap[reservationId];
+    modificationMode = 'R';
+    $('.add-payment').addClass('d-none');
+    $('.return-payment').removeClass('d-none');
+    cleanAmountReservationForm();
+    modal('reservationAmountHandlerModal').show();
+  }
+  function onAddPassengersClick(reservationId) {
+    selectedReservation = reservationsMap[reservationId];
+    modificationMode = 'A';
+    $('.add-passenger').removeClass('d-none');
+    $('.remove-passenger').addClass('d-none');
+    cleanPassengersReservationForm();
+    modal('reservationPassengersHandlerModal').show();
+  }
+  function onRemovePassengersClick(reservationId) {
+    selectedReservation = reservationsMap[reservationId];
+    modificationMode = 'R';
+    $('.add-passenger').addClass('d-none');
+    $('.remove-passenger').removeClass('d-none');
+    cleanPassengersReservationForm();
+    modal('reservationPassengersHandlerModal').show();
+  }
+  function getAndValidateReservationPassengersModified() {
+    const passengersReservation = $('#passengersQuantity').val()
+    const day = daysMap[selectedReservation.CODIGO_DIA_ASAMBLEA];
+    console.log({day, selectedReservation});
+    const totalSeats = new Decimal(day.TOTAL_ASIENTOS);
+    console.log({totalSeats: totalSeats.toString()});
+    const freeSeats = getDayTotalFreeSeats(day);
+    console.log({freeSeats: freeSeats.toString()});
+    const totalUsedSeats = totalSeats.minus(freeSeats);
+    console.log({totalUsedSeats: totalUsedSeats.toString()});
+    const oldQntSeats = new Decimal(selectedReservation.CANTIDAD_PASAJES ?? 0);
+    console.log({oldQntSeats: oldQntSeats.toString()});
+    let isValid = true;
+    const data = {
+      ticketCount: null
+    };
+    if(!passengersReservation || passengersReservation === '0') {
+      warningNotification({
+        message: `Debe ingresar una cantidad de pasajeros a ${modificationMode === 'A' ? 'agregar' : 'remover'}`
+      });
+      isValid = false;
+    } else {
+      const passengersReservationDecimal = new Decimal(passengersReservation);
+      if (modificationMode === 'A') {
+        if (passengersReservationDecimal.gt(freeSeats)){
+          warningNotification({
+            message: `Solo se cuentan con la siguiente cantidad de asientos libres: ${freeSeats.trunc().toString()}`
+          });
+          isValid = false;
+        }
+        data.ticketCount = oldQntSeats.plus(passengersReservationDecimal).trunc().toString();
+      } else {
+        if (passengersReservationDecimal.gt(oldQntSeats)){
+          warningNotification({
+            message: `La cantidad de pasajes máxima para cancelar es: ${oldQntSeats.trunc().toString()}`
+          });
+          isValid = false;
+        }
+        data.ticketCount = oldQntSeats.minus(passengersReservationDecimal).trunc().toString();
+      }
+    }
+    return {
+      data,
+      isValid
+    };
   }
 
+
+  async function onPasssengerQuantityModifiedClick(){
+    const {
+      data,
+      isValid
+    } = getAndValidateReservationPassengersModified();
+    if (!isValid) return;
+    loading()
+    await updateReservation(selectedReservation.CODIGO, data);
+    await getAssemblyByIdImpl();
+    fillAssemblyData(assemblyData);
+    setTimeout(() => {
+      stopLoading();
+      Swal.fire({
+        title: "Exito",
+        text: `Modificación de reserva realizada con exito`,
+        icon: "success"
+      });
+      modal('reservationPassengersHandlerModal').hide();
+    }, 200);
+  }
+
+  async function onAmountPaidModifiedClick(){
+    const {
+      data,
+      isValid
+    } = getAndValidateReservationAmountModified();
+    if (!isValid) return;
+    loading()
+    await updateReservation(selectedReservation.CODIGO, data);
+    await getAssemblyByIdImpl();
+    fillAssemblyData(assemblyData);
+    setTimeout(() => {
+      stopLoading();
+      Swal.fire({
+        title: "Exito",
+        text: `${modificationMode === 'A' ? 'Abono': 'Retiro'} realizado con exito`,
+        icon: "success"
+      });
+      modal('reservationAmountHandlerModal').hide();
+    }, 200);
+  }
+
+
+  function getAndValidateReservationAmountModified() {
+    const amountReservation = $('#amountReservation').val()
+    const day = daysMap[selectedReservation.CODIGO_DIA_ASAMBLEA];
+    const total = new Decimal(selectedReservation.CANTIDAD_PASAJES).mul(day.COSTO_PASAJE);
+    const amountPaid = new Decimal(selectedReservation.CANTIDAD_PAGADA);
+    const peding = new Decimal(total).minus(amountPaid);
+    let isValid = true;
+    const data = {
+      amountPaid: null
+    };
+    if(!amountReservation || amountReservation === '0.00') {
+      warningNotification({
+        message: `Debe ingresar una cantidad a ${modificationMode === 'A' ? 'abonar' : 'retirar'}`
+      });
+      isValid = false;
+    } else {
+      const amountDecimal = new Decimal(amountReservation);
+      if (modificationMode === 'A') {
+        if (amountDecimal.gt(peding)){
+          warningNotification({
+            message: `El monto ingresado es mayor al saldo pendiente: S/.${peding.toFixed(2)}`
+          });
+          isValid = false;
+        }
+        data.amountPaid = amountPaid.plus(amountDecimal).toFixed(2);
+      } else {
+        if (amountDecimal.gt(amountPaid)){
+          warningNotification({
+            message: `El monto que esta retirando es mayor al monto ya pagado: S/.${amountPaid.toFixed(2)}`
+          });
+          isValid = false;
+        }
+        data.amountPaid = amountPaid.minus(amountDecimal).toFixed(2);
+      }
+    }
+    return {
+      data,
+      isValid
+    };
+  }
+
+
   function getDayHtmlContent({day, idContent, i}) {
+    let htmlReservations = '';
+    day.reservations?.forEach(r => {
+      htmlReservations += getReservationContent(r);
+    });
     const { CODIGO } = day;
     let html = `
       <div class="day-tab tab-pane fade ${i === 0 ? 'show active' : ''}" id="${idContent}" day-id = "${day.CODIGO}" role="tabpanel" aria-labelledby="tab-header-${CODIGO}">
@@ -152,14 +330,16 @@
           </div>
           <div class="col-6">
             <p class="fs-4 text-end">
-              Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS).toFixed()}
+              Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS ?? 0).toFixed()}
             </p>
             <p class="fs-4 text-end">
               Total de asientos libres: ${getDayTotalFreeSeats(day)} de ${day.TOTAL_ASIENTOS}
             </p>
           </dvi>
         </div>
-        
+      </div>
+      <div class="w-100 mt-5">
+        ${htmlReservations}
       </div>
     `;
     return html;
