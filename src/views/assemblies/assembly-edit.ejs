@@ -72,7 +72,7 @@
     let assemblyTotalCost = new Decimal(0);
     let totalPaid = new Decimal(0);
     assembly.days?.forEach(day => {
-      const busTotalCost = new Decimal(day.COSTO_TOTAL_BUS);
+      const busTotalCost = new Decimal(day.COSTO_TOTAL_BUS ?? 0);
       assemblyTotalCost = assemblyTotalCost.plus(busTotalCost);
       totalPaid = totalPaid.plus(getDayTotalPaid(day));
     });
@@ -137,7 +137,7 @@
             </div>
           </div>
           <div class="d-flex justify-content-center align-items-center border-start">
-            <button type="button" class="btn btn-danger ms-3">
+            <button type="button" class="btn btn-danger ms-3" onclick="onRemoveReservationClick(${reservation.CODIGO})">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -147,7 +147,39 @@
     `;
     return html;
   }
-  
+  async function removeReservationConfirm(reservationId) {
+    loading();
+    //await deleteReservationById(reservationId);
+    assemblyData = await getAssemblyById(assemblyId);
+    mapReservations(assemblyData);
+    // console.log(1)
+    await sleep(5000);
+    console.log(2)
+    //stopLoading();
+    Swal.fire({
+      title: "Exito",
+      text: `Reserva eliminada con exito`,
+      icon: "success"
+    });
+  }
+
+
+  function onRemoveReservationClick(reservationId){
+    const reservation = reservationsMap[reservationId];
+    Swal.fire({
+      title: `¿Seguro que desea eliminar a reservación de ${reservation.CANTIDAD_PASAJES} asiento(s) a nombre de: ${reservation.REPRESENTANTE}?`,
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonColor: "#6c757d", // gris
+      confirmButtonColor: "#d33", // verde
+      confirmButtonText: "Eliminar",
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await removeReservationConfirm(reservationId);
+      }
+    });
+  }
   function onAddAmountClick(reservationId) {
     selectedReservation = reservationsMap[reservationId];
     modificationMode = 'A';
@@ -238,7 +270,7 @@
     await updateReservation(selectedReservation.CODIGO, data);
     await getAssemblyByIdImpl();
     fillAssemblyData(assemblyData);
-    setTimeout(() => {
+    setTimeout(async () => {
       stopLoading();
       Swal.fire({
         title: "Exito",
@@ -259,7 +291,7 @@
     await updateReservation(selectedReservation.CODIGO, data);
     await getAssemblyByIdImpl();
     fillAssemblyData(assemblyData);
-    setTimeout(() => {
+    setTimeout(async () => {
       stopLoading();
       Swal.fire({
         title: "Exito",
@@ -321,25 +353,30 @@
     const { CODIGO } = day;
     let html = `
       <div class="day-tab tab-pane fade ${i === 0 ? 'show active' : ''}" id="${idContent}" day-id = "${day.CODIGO}" role="tabpanel" aria-labelledby="tab-header-${CODIGO}">
-        <div class="d-flex">
-          <div class="col-6 d-flex align-items-center">
-            <button type="button" class="btn btn-primary" onclick="onAddReservacionClick()">
-              <i class="fa-solid fa-plus"></i>
-              Reservación
-            </button>
-          </div>
-          <div class="col-6">
-            <p class="fs-4 text-end">
-              Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS ?? 0).toFixed()}
-            </p>
-            <p class="fs-4 text-end">
-              Total de asientos libres: ${getDayTotalFreeSeats(day)} de ${day.TOTAL_ASIENTOS}
-            </p>
-          </dvi>
+        <div>
+          <div class="d-flex">
+            <div class="col-4 d-flex align-items-center">
+              <button type="button" class="btn btn-primary" onclick="onAddReservacionClick()">
+                <i class="fa-solid fa-plus"></i>
+                Reservación
+              </button>
+            </div>
+            <div class="col-8">
+              <p class="fs-4 text-end">
+                Pasaje: S/.${new Decimal(day.COSTO_PASAJE).toFixed(2)}
+              </p>
+              <p class="fs-4 text-end">
+                Total pagado del día: S/.${getDayTotalPaid(day).toFixed(2)} de S/.${new Decimal(day.COSTO_TOTAL_BUS ?? 0).toFixed()}
+              </p>
+              <p class="fs-4 text-end">
+                Total de asientos libres: ${getDayTotalFreeSeats(day)} de ${day.TOTAL_ASIENTOS}
+              </p>
+            </div>
+          </div>          
         </div>
-      </div>
-      <div class="w-100 mt-5">
-        ${htmlReservations}
+        <div class="w-100 mt-5">
+          ${htmlReservations}
+        </div>
       </div>
     `;
     return html;
@@ -379,7 +416,6 @@
   }
   function getAndValidateReservationData () {
     const day = getSelectedDay();
-    console.log({day});
     const freeSeats = getDayTotalFreeSeats(day);
     const data = {
       representative: $('#representative').val().trim(),
@@ -426,8 +462,10 @@
     assemblyData = await getAssemblyById(assemblyId);
     mapReservations(assemblyData);
     fillAssemblyData(assemblyData);
-    setTimeout(() => {
+    setTimeout(async () => {
+      await sleep(300);
       stopLoading();
+      modal('reservationModal').hide();
       Swal.fire({
         title: "Exito",
         text: "Reservación creada correctamente",
