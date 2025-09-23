@@ -28,7 +28,7 @@ app.use('/reservations', reservationsRoutes);
 app.get('/verify-token', verifyJWtBasic, (req, res) => {
   res.json({success: true});
 });
-// app.use((req, res) => {
-//   res.redirect('/auth/login'); // o donde quieras
-// });
+app.use((req, res) => {
+  res.redirect('/auth/login'); // o donde quieras
+});
 app.listen(process.env.PORT);
