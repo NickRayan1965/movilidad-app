@@ -8,6 +8,7 @@ import expressLayouts from "express-ejs-layouts";
 import assemblyTypesRoutes from './routes/assemblyTypesRoute.js';
 import path from "path";
 import { fileURLToPath } from "url";
+import { authMiddleware, verifyJWtBasic } from './utils/authMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +25,10 @@ app.use('/auth', authRoutes);
 app.use('/assemblies', assembliesRoutes);
 app.use('/assemblyTypes', assemblyTypesRoutes);
 app.use('/reservations', reservationsRoutes);
-app.use((req, res) => {
-  res.redirect('/auth/login'); // o donde quieras
+app.get('/verify-token', verifyJWtBasic, (req, res) => {
+  res.json({success: true});
 });
-app.listen(3000);
+// app.use((req, res) => {
+//   res.redirect('/auth/login'); // o donde quieras
+// });
+app.listen(process.env.PORT);

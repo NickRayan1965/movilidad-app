@@ -126,9 +126,15 @@
   </style>
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark py-5" style="height: 10%;">
-      <div class="container">
-        <a class="navbar-brand" style="font-size: 3rem;" href="/">Movilidad</a>
+    <nav class="navbar navbar-dark bg-dark py-5 d-flex justify-content-between align-items-center" style="height: 10%;">
+      <div class="ms-5">
+        <a class="navbar-brand fw-bold" style="font-size: 3rem;" href="/assemblies/dashboard">Movilidad</a>
+      </div>
+      <div class="col-5 me-3 d-flex justify-content-center align-items-center">
+        <span class="text-white ms-auto fs-4 me-3 fw-semibold" id="welcome-banner"></span>
+        <button class="btn btn-danger" onclick="logOut()" id="log-out-btn">
+          <i class="fa-solid fa-right-from-bracket fs-1"></i>
+        </button>
       </div>
     </nav>
 

@@ -149,13 +149,13 @@
   }
   async function removeReservationConfirm(reservationId) {
     loading();
-    //await deleteReservationById(reservationId);
+    await deleteReservationById(reservationId);
     assemblyData = await getAssemblyById(assemblyId);
     mapReservations(assemblyData);
-    // console.log(1)
-    await sleep(5000);
-    console.log(2)
-    //stopLoading();
+    await getAssemblyByIdImpl();
+    fillAssemblyData(assemblyData);
+    await sleep(500);
+    stopLoading();
     Swal.fire({
       title: "Exito",
       text: `Reserva eliminada con exito`,
@@ -215,15 +215,10 @@
   function getAndValidateReservationPassengersModified() {
     const passengersReservation = $('#passengersQuantity').val()
     const day = daysMap[selectedReservation.CODIGO_DIA_ASAMBLEA];
-    console.log({day, selectedReservation});
     const totalSeats = new Decimal(day.TOTAL_ASIENTOS);
-    console.log({totalSeats: totalSeats.toString()});
     const freeSeats = getDayTotalFreeSeats(day);
-    console.log({freeSeats: freeSeats.toString()});
     const totalUsedSeats = totalSeats.minus(freeSeats);
-    console.log({totalUsedSeats: totalUsedSeats.toString()});
     const oldQntSeats = new Decimal(selectedReservation.CANTIDAD_PASAJES ?? 0);
-    console.log({oldQntSeats: oldQntSeats.toString()});
     let isValid = true;
     const data = {
       ticketCount: null
@@ -278,7 +273,7 @@
         icon: "success"
       });
       modal('reservationPassengersHandlerModal').hide();
-    }, 200);
+    }, 500);
   }
 
   async function onAmountPaidModifiedClick(){
@@ -299,7 +294,7 @@
         icon: "success"
       });
       modal('reservationAmountHandlerModal').hide();
-    }, 200);
+    }, 500);
   }
 
 
@@ -471,7 +466,7 @@
         text: "Reservación creada correctamente",
         icon: "success"
       });
-    }, 200);
+    }, 500);
   }
   async function getAssemblyByIdImpl() {
     assemblyData = await getAssemblyById(assemblyId);

@@ -8,7 +8,7 @@ export function register(req, res) {
 export function login(req, res) {
   const { username, password } = req.body;
   const result = authService.login(username, password);
-  if (result.success) return res.json({ token: result.token });
+  if (result.success) return res.json({ token: result.token, user: result.user });
   res.status(401).json({ error: result.message });
 }
 export function loginForm(_, res) {

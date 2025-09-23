@@ -1,48 +1,69 @@
-<div id="globalLoading" aria-hidden="true" role="status">
-  <div class="gl-backdrop"></div>
-  <div class="gl-center" aria-live="polite">
-    <div class="spinner-border" role="status" style="width:3rem;height:3rem;">
-      <span class="visually-hidden">Cargando...</span>
-    </div>
-    <div id="gl-text" class="mt-2 text-white">Cargando...</div>
+<div id="loader-overlay" aria-hidden="true" class="d-none">
+  <div class="loader-box" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <div class="loader-text">Cargando...</div>
   </div>
 </div>
 <style>
-  #globalLoading{display:none;position:fixed;inset:0;z-index:2147483646;pointer-events:none;}
-  #globalLoading[aria-hidden="false"]{display:flex;pointer-events:auto;align-items:center;justify-content:center;}
-  #globalLoading .gl-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(1px);}
-  #globalLoading .gl-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  #gl-text{color:#fff;font-size:.95rem;}
+  :root{--theme:#16a085;}
+  .hidden{display:none;}
+  #loader-overlay{
+    position:fixed;
+    inset:0; /* top:0;right:0;bottom:0;left:0; */
+    background:rgba(0,0,0,0.35); /* semitransparente */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    pointer-events:auto;
+  }
+  .loader-box{
+    display:flex;
+    flex-direction:column;
+    gap:.6rem;
+    align-items:center;
+    justify-content:center;
+    padding:1rem 1.2rem;
+    border-radius:12px;
+    background:rgba(255,255,255,0.06);
+    backdrop-filter: blur(4px);
+  }
+  .spinner{
+    width:64px;
+    height:64px;
+    border:8px solid rgba(0,0,0,0.08);
+    border-top-color:var(--theme);
+    border-radius:50%;
+    animation:spin 0.85s linear infinite;
+    box-sizing:border-box;
+  }
+  .loader-text{
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    font-size:0.95rem;
+    color:#fff;
+    opacity:.95;
+    text-align:center;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 <script>
-  (function(){
-    window._gl_count = 0;
-    window._gl_prevOverflow = null;
-    window.loading = function(text){
-      const el = document.getElementById('globalLoading');
-      if(text) document.getElementById('gl-text').textContent = text;
-      window._gl_count = (window._gl_count || 0) + 1;
-      if(window._gl_count === 1){
-        window._gl_prevOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        el.setAttribute('aria-hidden','false');
-      }
-    };
-    window.stopLoading = function(force=false){
-      const el = document.getElementById('globalLoading');
-      if(force){
-        window._gl_count = 0;
-      } else {
-        window._gl_count = Math.max(0, (window._gl_count || 0) - 1);
-      }
-      if(window._gl_count === 0){
-        el.setAttribute('aria-hidden','true');
-        document.body.style.overflow = window._gl_prevOverflow || '';
-      }
-    };
-    // opcional: reset por si algo falla
-    window.resetLoading = function(){ window.hideLoading(true); };
-  })();
+  const _loader = document.getElementById('loader-overlay');
+  const _bodyOverflow = () => document.documentElement.style.overflow;
+  function loading({blockScroll = true} = {}) {
+    if (!_loader) return;
+    _loader.classList.remove('d-none');
+    if (blockScroll) {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    }
+  }
+
+  function stopLoading() {
+    if (!_loader) return;
+    _loader.classList.add('d-none');
+    document.documentElement.style.overflow = '';
+    document.body.style.touchAction = '';
+  }
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -58,13 +79,15 @@
     });
     if (res.status === 401) {
       localStorage.removeItem("token");   // limpia token
-      window.location.href = "/auth/login";    // redirige
-      return; // corta la ejecución
+      localStorage.removeItem("user");
+      if (window.location.pathname !== "/auth/login") {
+        window.location.href = "/auth/login";
+      }
+      throw new Error(`Error ${res.status}`);
     }
     if (res.status === 500) {
       toastr.error("Ocurrió un error en el servidor");
       throw new Error(`Error ${res.status}`);
-      return;
     }
     if (!res.ok) throw new Error(`Error ${res.status}`);
     return res.json();
@@ -80,16 +103,17 @@
         "Authorization": "Bearer " + localStorage.getItem("token")
       }
     });
-    console.log({res});
     if (res.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/auth/login";
-      return;
+      localStorage.removeItem("user");
+      if (window.location.pathname !== "/auth/login") {
+        window.location.href = "/auth/login";
+      }
+      throw new Error(`Error ${res.status}`);
     }
     if (res.status === 500) {
       toastr.error("Ocurrió un error en el servidor");
       throw new Error(`Error ${res.status}`);
-      return;
     }
     if (!res.ok) throw new Error(`Error ${res.status}`);
     return res.json();
@@ -106,13 +130,15 @@
     });
     if (res.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/auth/login";
-      return;
+      localStorage.removeItem("user");
+      if (window.location.pathname !== "/auth/login") {
+        window.location.href = "/auth/login";
+      }
+      throw new Error(`Error ${res.status}`);
     }
     if (res.status === 500) {
       toastr.error("Ocurrió un error en el servidor");
       throw new Error(`Error ${res.status}`);
-      return;
     }
     if (!res.ok) throw new Error(`Error ${res.status}`);
     return res.json();
@@ -127,13 +153,15 @@
     });
     if (res.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/auth/login";
-      return;
+      localStorage.removeItem("user");
+      if (window.location.pathname !== "/auth/login") {
+        window.location.href = "/auth/login";
+      }
+      throw new Error(`Error ${res.status}`);
     }
     if (res.status === 500) {
       toastr.error("Ocurrió un error en el servidor");
       throw new Error(`Error ${res.status}`);
-      return;
     }
     if (!res.ok) throw new Error(`Error ${res.status}`);
     return res.json();
@@ -215,8 +243,34 @@
     });
   }
 
+  async function verifySession() {
+    if (window.location.pathname === '/auth/login') return;
+    const token = localStorage.getItem('token');
+    if(token) return;
+    try {
+      await getData('/verify-token');
+    } catch (error) {
+      window.location.href = '/auth/login';
+    }
+  }
 
-  $(function() {
+  function welcomeHandler() {
+    const userString = localStorage.getItem('user');
+    if(!userString || userString === 'undefined' || userString === 'null') {
+      $('#welcome-banner').addClass('d-none');
+      $('#log-out-btn').addClass('d-none');
+      return;
+    };
+    const user = JSON.parse(userString);
+    $('#welcome-banner').removeClass('d-none').text(`Bienvenido ${user.NOMBRE_COMPLETO}`);
+    $('#log-out-btn').removeClass('d-none');
+  }
+  function logOut() {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.location.href = "/auth/login";
+  }
+  $(async function() {
     $(".modal-dialog").draggable({
       handle: ".modal-header"
     });
@@ -228,7 +282,9 @@
         position: ""
       });
     });
+    await verifySession();
     attachNumericHandlers();
     attachIntegerHandlers();
+    welcomeHandler();
   });
 </script>

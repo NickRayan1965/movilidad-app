@@ -89,13 +89,25 @@
     setTimeout(() => {
       Swal.close();
       localStorage.setItem('token', resData.token);
+      localStorage.setItem('user', JSON.stringify(resData.user));
       window.location.href = '/assemblies/dashboard';
     }, 100);
 
+  }
+  async function verifyExistingToken(params) {
+    try {
+      await getData('/verify-token');
+      window.location.href = '/assemblies/dashboard';
+    } catch (error) {
+      console.log(error);
+    }
   }
   $('#loginForm').on('keypress', function(e) {
     if (e.which === 13) { // 13 es la tecla Enter
       login(); // Llama a tu función
     }
+  });
+  $(function() {
+    verifyExistingToken();
   });
 </script>
