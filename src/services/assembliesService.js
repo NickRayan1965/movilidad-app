@@ -106,9 +106,7 @@ function fillReservations({days, daysFromWhere, params}) {
     );
   `;
   const reservationsQuery = selectReservations.concat(reservationsFromWhere);
-  console.log({reservationsQuery});
   const reservations = db.prepare(reservationsQuery).all(params);
-  console.log({reservations});
   mapReservationsOnDays(days, reservations);
 }
 function mapReservationsOnDays(days, reservations){

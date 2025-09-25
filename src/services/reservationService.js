@@ -26,7 +26,7 @@ export function createReservation(data) {
 export function getReservationById(id) {
   const reservation = db.prepare(`
     SELECT
-      RESERVACION.id CODIGO
+      RESERVACION.id CODIGO,
       RESERVACION.assembly_day_id CODIGO_DIA_ASAMBLEA,
       RESERVACION.representative_name REPRESENTANTE,
       RESERVACION.tickets_count CANTIDAD_PASAJES,
@@ -47,7 +47,6 @@ export function updateReservation(id, data) {
   reservation.REPRESENTANTE = data.representative !== undefined ? data.representative : reservation.REPRESENTANTE;
   reservation.CANTIDAD_PASAJES = data.ticketCount !== undefined ? data.ticketCount : reservation.CANTIDAD_PASAJES;
   reservation.CANTIDAD_PAGADA = data.amountPaid !== undefined ? data.amountPaid : reservation.CANTIDAD_PAGADA;
-
   db.prepare(`
     UPDATE reservations
     SET

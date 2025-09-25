@@ -187,20 +187,12 @@
       data,
       isValid
     } = getAndValidateAssemblyData();
-    console.log({data, isValid});
     if(!isValid) return;
-    Swal.fire({
-      title: 'Cargando...',
-      text: 'Por favor espera',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
+    loading();
     try {
       await createAssembly(data);
       setTimeout(() => {
-        Swal.close();
+        stopLoading();
         modal('assemblyModal').hide();
         Swal.fire({
           title: "Exito",
@@ -208,7 +200,7 @@
           icon: "success"
         });
         <%= onSave ? onSave.concat('()') : 'return;'%>
-      }, 200);
+      }, 500);
     } catch (error) {
       Swal.close();
     }

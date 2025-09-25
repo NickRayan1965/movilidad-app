@@ -13,8 +13,8 @@ export const createReservation = (req, res) => {
 export const deleteReservationById = (req, res) => {
   try {
     const { id } = req.params;
-    return reservationsService.deleteReservationById(id);
-    res.status(204).send();
+    const resOpe = reservationsService.deleteReservationById(id);
+    res.status(200).json({succes: 'ok', data: resOpe});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

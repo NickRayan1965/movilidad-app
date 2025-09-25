@@ -30,7 +30,7 @@ export function login(username, password) {
   const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
   if (user && bcrypt.compareSync(password, user.password)) {
     const token = jwt.sign({ id: user.id, username: user.username }, SECRET, { expiresIn: "24h" });
-    return { success: true, token };
+    return { success: true, token, user: getUserById(user.id) };
   }
   return { success: false, message: "Credenciales inválidas" };
 }
