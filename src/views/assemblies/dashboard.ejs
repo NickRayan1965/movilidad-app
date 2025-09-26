@@ -9,7 +9,7 @@
     <h4 class="mb-4" style="color:#1abc9c;">Mis Asambleas...</h4>
     <div class="standar-container">
       <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-main text-white fw-bold" data-bs-toggle="modal" data-bs-target="#assemblyModal">
+        <button type="button" class="btn btn-main text-white fw-bold fs-1" data-bs-toggle="modal" data-bs-target="#assemblyModal" onclick="onNewAssemblyModalClick()">
           NUEVO
         </button>
       </div>
@@ -34,10 +34,10 @@
       }
       const itemId = `assembly-item-${assembly.CODIGO}`;
       e.append(`
-        <div class="btn btn-light mb-3 w-100" id="${itemId}">
+        <div class="btn btn-light my-3 w-100" id="${itemId}">
           <button class="w-100 mb-3 rounded borders py-4 px-3 btn btn-link">
-            <div class="fw-bold fs-2 text-start">${assembly.NOMBRE_ASAMBLEA}</div>
-            <div class="fs-3 text-end">${date}</div>
+            <div class="fw-bold display-3 text-start">${assembly.NOMBRE_ASAMBLEA}</div>
+            <div class="fs-1 text-end">${date}</div>
           </button>
         </div> 
       `);

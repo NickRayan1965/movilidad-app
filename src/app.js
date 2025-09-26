@@ -15,12 +15,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function main() {
-  await downloadDb();
+  //await downloadDb();
   const app = express();
-  app.use((req,res, next) =>{
-    cleanAndProgramDbBackup();
-    next();
-  });
+  // app.use((req,res, next) =>{
+  //   cleanAndProgramDbBackup();
+  //   next();
+  // });
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(express.static('public'));

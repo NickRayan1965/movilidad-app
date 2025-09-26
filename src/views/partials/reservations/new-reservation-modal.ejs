@@ -2,33 +2,31 @@
   <div class="modal-dialog" style="max-width: 80%;">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fs-1 fw-bold">Crear Reservación</h5>
+        <h5 class="modal-title display-1 fw-bold w-100 text-center">Crear Reservación</h5>
       </div>
       <div class="modal-body">
         <div class="">
           <div class="mb-3">
-            <label for="representative" class="form-label fw-bold final-asterisk">Representante</label>
-            <input class="form-control form-control-lg" type="text" placeholder="Representante de la reservación" id="representative">
+            <label for="representative" class="form-label fw-bold final-asterisk fs-1">Representante</label>
+            <input class="form-control form-control-lg fs-1" type="text" placeholder="Representante de la reservación" id="representative">
           </div>
-          <div class="d-flex">
-            <div class="mb-3 w-50 me-2">
-              <label for="" class="form-label fw-bold final-asterisk">
-                Cantidad de pasajes
-              </label>
-              <input type="text" class="form-control form-control-lg integer" maxlength="3" id="ticketCount" value="1">
-            </div>
-            <div class="mb-3 w-50 me-2">
-              <label for="" class="form-label fw-bold final-asterisk">
-                Cantidad inicial pagada S/
-              </label>
-              <input type="text" class="form-control form-control-lg numeric" maxlength="6" id="amountPaid" value="0.00">
-            </div>
+          <div class="mb-3 w-100 me-2">
+            <label for="" class="form-label fw-bold final-asterisk fs-1">
+              Cantidad de pasajes
+            </label>
+            <input type="text" class="form-control form-control-lg integer  fs-1" maxlength="3" id="ticketCount" value="1" inputmode="numeric">
+          </div>
+          <div class="mb-3 w-100 me-2">
+            <label for="" class="form-label fw-bold final-asterisk fs-1">
+              Cantidad inicial pagada S/
+            </label>
+            <input type="text" class="form-control form-control-lg numeric fs-1" maxlength="6" id="amountPaid" value="0.00" inputmode="numeric">
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-success" onclick="createReservationHandler()">Agregar</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-target="#reservationModal">Cerrar</button>
+        <button type="button" class="btn btn-success fs-1" onclick="createReservationHandler()">Agregar</button>
+        <button type="button" class="btn btn-secondary fs-1" data-bs-dismiss="modal" data-bs-target="#reservationModal">Cerrar</button>
       </div>
     </div>
   </div>

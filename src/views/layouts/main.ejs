@@ -42,7 +42,7 @@
       height: 80vh;
     }
     .standar-card h4 {
-      font-size: 4.8rem;
+      font-size: 5.8rem;
       font-weight: bold;
       text-align: left;
     }
@@ -120,18 +120,27 @@
       content: "*";
       color: red;
       margin-left: 0.25rem;
-      font-size: 1rem;
       vertical-align: middle;
+    }
+    #toast-container > .toast {
+      font-size: 3rem;   /* texto más grande */
+      padding: 20px;       /* más espacio */
+      min-width: 500px;    /* más ancho */
+    }
+    #toast-container .toast-close-button {
+      font-size: 2rem;   /* más grande */
+      top: 8px;          /* ajusta posición */
+      right: 10px;
     }
   </style>
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-dark bg-dark py-5 d-flex justify-content-between align-items-center" style="height: 10%;">
       <div class="ms-5">
-        <a class="navbar-brand fw-bold" style="font-size: 3rem;" href="/assemblies/dashboard">Movilidad</a>
+        <a class="navbar-brand fw-bold" style="font-size: 4.8rem;" href="/assemblies/dashboard">Movilidad</a>
       </div>
-      <div class="col-5 me-3 d-flex justify-content-center align-items-center">
-        <span class="text-white ms-auto fs-4 me-3 fw-semibold" id="welcome-banner"></span>
+      <div class="col-6 me-3 d-flex justify-content-center align-items-center">
+        <span class="text-white ms-auto fs-2 me-3 fw-semibold" id="welcome-banner"></span>
         <button class="btn btn-danger" onclick="logOut()" id="log-out-btn">
           <i class="fa-solid fa-right-from-bracket fs-1"></i>
         </button>

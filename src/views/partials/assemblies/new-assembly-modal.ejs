@@ -2,21 +2,21 @@
   <div class="modal-dialog" style="max-width: 80%;">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fs-1 fw-bold">Crear Asamblea</h5>
+        <h5 class="modal-title display-1 w-100 text-center fw-bold">Crear Asamblea</h5>
       </div>
       <div class="modal-body">
         <div class="">
           <div class="mb-3">
-            <label for="cbxTipoAsamblea" class="form-label fw-bold final-asterisk">Tipo de Asamblea</label>
-            <select class="form-select form-select-lg" id="cbxTipoAsamblea">
+            <label for="cbxTipoAsamblea" class="form-label fw-bold final-asterisk fs-1">Tipo de Asamblea</label>
+            <select class="form-select form-select-lg fs-1" id="cbxTipoAsamblea">
             </select>
           </div>
           <div class="mb-3">
-            <label for="nombreAsamblea" class="form-label fw-bold final-asterisk">Nombre de la Asamblea</label>
-            <input class="form-control form-control-lg" type="text" placeholder="Nombre de la Asamblea" id="nombreAsamblea">
+            <label for="nombreAsamblea" class="form-label fs-1 fw-bold final-asterisk">Nombre de la Asamblea</label>
+            <input class="form-control form-control-lg fs-1" type="text" placeholder="Nombre de la Asamblea" id="nombreAsamblea">
           </div>
-          <div class="d-flex justify-content-end mb-3">
-            <button type="button" class="btn btn-primary" onclick="onAddAssemblyDayHandler()">Agregar día</button>
+          <div class="d-flex justify-content-end my-5">
+            <button type="button" class="btn btn-primary fs-1" onclick="onAddAssemblyDayHandler()">Agregar día</button>
           </div>
           <div class="" id="assembly-days-cnt">
 
@@ -25,8 +25,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-success" onclick="createAssemblyHandler()">Crear</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-target="#assemblyModal">Cerrar</button>
+        <button type="button" class="btn btn-success fs-1" onclick="createAssemblyHandler()">Crear</button>
+        <button type="button" class="btn btn-secondary fs-1" data-bs-dismiss="modal" data-bs-target="#assemblyModal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -40,38 +40,40 @@
   }
   function getAssemblyDayHtml(data) {
     return `
-      <div class="border border-secondary rounded mb-3 position-relative assembly-day-item">
-        <button type="button" class="btn btn-sm btn-delete-subtle position-absolute d-flex align-items-center justify-content-center" 
-        style="top: 8px; right: 8px;">
-          <i class="fas fa-times"></i>
-        </button>
-        <div class="m-3">
+      <div class="border border-secondary rounded mb-3 position-relative assembly-day-item p-1">
+        <div class="mb-3 justify-content-end d-flex">
+          <button type="button" class="me-1 mt-1 btn btn-sm btn-delete d-flex align-items-center justify-content-center" onclick="onRemoveAssemblyDayItem(this)" 
+          style="">
+            <i class="fs-3 fas fa-times"></i>
+          </button>
+        </div>
+        <div class="">
           <div class="d-flex">
             <div class="mb-3 w-50 me-2">
-              <label for="" class="form-label fw-bold final-asterisk">
+              <label for="" class="form-label fw-bold final-asterisk fs-1">
                 Fecha
               </label>
-              <input type="date" class="form-control form-control-lg assembly-day-date">
+              <input type="date" class="form-control form-control-lg  fs-1 assembly-day-date">
             </div>
             <div class="mb-3 w-50">
-              <label for="" class="form-label fw-bold final-asterisk">
+              <label for="" class="form-label fw-bold final-asterisk fs-1">
                 Costo total del bus
               </label>
-              <input type="text" class="form-control form-control-lg numeric assembly-day-transport-total-cost">
+              <input type="text" class="form-control fs-1 form-control-lg numeric assembly-day-transport-total-cost" inputmode="numeric" maxlength="6">
             </div>
           </div>
           <div class="d-flex">
             <div class="mb-3 w-50 me-2">
-              <label for="" class="form-label fw-bold final-asterisk">
+              <label for="" class="form-label fw-bold final-asterisk fs-1">
                 Total de asientos
               </label>
-              <input type="text" class="form-control form-control-lg integer assembly-day-total-seats" maxlength="3" +>
+              <input type="text" class="form-control form-control-lg integer assembly-day-total-seats fs-1" maxlength="3" inputmode="numeric">
             </div>
             <div class="mb-3 w-50">
-              <label for="" class="form-label fw-bold final-asterisk">
+              <label for="" class="form-label fw-bold final-asterisk fs-1">
                 Costo del pasaje
               </label>
-              <input type="text" class="form-control form-control-lg numeric assembly-day-ticket-cost">
+              <input type="text" class="form-control form-control-lg numeric assembly-day-ticket-cost fs-1" maxlength="3" inputmode="numeric">
             </div>
           </div>           
         </div>
@@ -182,38 +184,43 @@
       isValid
     };
   }
+  
+  function onRemoveAssemblyDayItem(e) {
+    $(e).closest('.assembly-day-item').remove();
+  }
   async function createAssemblyHandler() {
     const {
       data,
       isValid
     } = getAndValidateAssemblyData();
     if(!isValid) return;
-    Swal.fire({
-      title: 'Cargando...',
-      text: 'Por favor espera',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
+    loading();
     try {
       await createAssembly(data);
       setTimeout(() => {
-        Swal.close();
+        stopLoading();
         modal('assemblyModal').hide();
+        cleanAssemblyModal();
         Swal.fire({
           title: "Exito",
           text: "Asamblea creada correctamente",
           icon: "success"
         });
         <%= onSave ? onSave.concat('()') : 'return;'%>
-      }, 200);
+      }, 500);
     } catch (error) {
       Swal.close();
     }
     
   }
-  
+  function cleanAssemblyModal() {
+    $('#cbxTipoAsamblea').val('');
+    $('#nombreAsamblea').val('');
+    $('#assembly-days-cnt').html('');
+  }
+  function onNewAssemblyModalClick() {
+    cleanAssemblyModal();
+  }
   $(async function () {
     tiposAsambleas = await getAssamblyTypes();
     fillAssemblyCbx(tiposAsambleas);
