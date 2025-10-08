@@ -10,7 +10,24 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* sombra sutil */
     transition: all 0.3s ease;  /* animación suave */
   }
+  .card-reservation.paid {
+      border: 3px solid #198754 !important;
+      background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%) !important;
+  }
 
+  .card-reservation.pending {
+      border: 3px solid #fd7e14 !important;
+      background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%) !important;
+  }
+
+  .status-badge {
+      letter-spacing: 0.5px;
+  }
+  .break-text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
 </style>
 <%- include('../partials/reservations/new-reservation-modal') %>
 <div class="standar-wrapper">
@@ -90,6 +107,63 @@
     });
     return day;
   }
+  // function getReservationContent(reservation) {
+  //   const day = daysMap[reservation.CODIGO_DIA_ASAMBLEA];
+  //   const freeSeats = getDayTotalFreeSeats(day);
+  //   const seats = new Decimal(reservation.CANTIDAD_PASAJES ?? 0);
+  //   const total = seats.mul(day.COSTO_PASAJE ?? 0).toFixed(2);
+  //   const amountPaid = new Decimal(reservation.CANTIDAD_PAGADA ?? 0);
+  //   const pending = new Decimal(total).minus(amountPaid).toFixed(2);
+  //   const nothingPending = pending === '0.00';
+  //   const noSeatsFree = freeSeats.trunc().toString() === '0';
+  //   const noUsedSeats = seats.trunc().toString() === '0';
+  //   const noAmountPaid = amountPaid.toFixed(2) === '0.00';
+  //   let html = `
+  //   <div class="py-3 px-3 border border-2 border-dark rounded-5 bg-${pending === '0.00' ? 'success' : 'warning'}-subtle w-100 mb-3">
+  //     <div class="d-flex justify-content-between">
+  //       <div class="d-flex d-flex align-items-center">
+  //         <div class="border border-2 border-dark rounded-circle d-flex align-items-center bg-white justify-content-center" style="height: 85px; width: 85px;">
+  //           <span class="display-3 fw-bold">${reservation.CANTIDAD_PASAJES ?? '0'}</span>
+  //         </div>
+  //         <div class="d-flex flex-column align-items-center ms-3">
+  //           <div class="display-3 ms-3 fw-bold">${reservation.REPRESENTANTE}</div>
+  //           <div class="d-flex justify-content-end fs-1">
+  //             <div class="me-1 fw-semibold">S/.${reservation.CANTIDAD_PAGADA ?? '0.00'} DE S/.${total} pagados</div> | <div class="fw-bold ms-1">S/.${pending} pendiente</div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //       <div class="d-flex">
+  //         <div class="me-3"> 
+  //           <div class="d-flex mb-2">
+  //             <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" ${nothingPending ? 'disabled' : ''} style="height: 50px; width: 50px;" onclick="onAddAmountClick(${reservation.CODIGO})">
+  //               <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
+  //             </button>
+  //             <button type="button" class="ms-3 btn btn-danger rounded-4 d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onReturnAmountClick(${reservation.CODIGO})" ${noAmountPaid ? 'disabled': ''}>
+  //               <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
+  //             </button>            
+  //           </div>
+  //           <div class="d-flex">
+  //             <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onAddPassengersClick(${reservation.CODIGO})" ${noSeatsFree ? 'disabled' : ''}>
+  //               <i class="fa-solid fa-plus fs-4 me-1"></i>
+  //               <i class="fa-solid fa-person fs-4"></i>
+  //             </button>
+  //             <button type="button" class="ms-3 btn btn-danger rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onRemovePassengersClick(${reservation.CODIGO})" ${noUsedSeats ? 'disabled': ''}>
+  //               <i class="fa-solid fa-minus fs-5 me-1"></i>
+  //               <i class="fa-solid fa-person fs-4"></i>
+  //             </button>            
+  //           </div>
+  //         </div>
+  //         <div class="d-flex justify-content-center align-items-center border-start">
+  //           <button type="button" class="btn btn-danger ms-3" onclick="onRemoveReservationClick(${reservation.CODIGO})">
+  //             <i class="fa-solid fa-trash"></i>
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>   
+  //   </div>
+  //   `;
+  //   return html;
+  // }
   function getReservationContent(reservation) {
     const day = daysMap[reservation.CODIGO_DIA_ASAMBLEA];
     const freeSeats = getDayTotalFreeSeats(day);
@@ -101,52 +175,85 @@
     const noSeatsFree = freeSeats.trunc().toString() === '0';
     const noUsedSeats = seats.trunc().toString() === '0';
     const noAmountPaid = amountPaid.toFixed(2) === '0.00';
+    
+    const isPaid = nothingPending;
+    const statusClass = isPaid ? 'paid' : 'pending';
+    const statusBg = isPaid ? 'success' : 'warning';
+    const statusText = isPaid ? 'PAGADO' : 'PENDIENTE';
+    
     let html = `
-    <div class="py-3 px-3 border border-2 border-dark rounded-5 bg-${pending === '0.00' ? 'success' : 'warning'}-subtle w-100 mb-3">
-      <div class="d-flex justify-content-between">
-        <div class="d-flex d-flex align-items-center">
-          <div class="border border-2 border-dark rounded-circle d-flex align-items-center bg-white justify-content-center" style="height: 85px; width: 85px;">
-            <span class="display-3 fw-bold">${reservation.CANTIDAD_PASAJES ?? '0'}</span>
-          </div>
-          <div class="d-flex flex-column align-items-center ms-3">
-            <div class="display-3 ms-3 fw-bold">${reservation.REPRESENTANTE}</div>
-            <div class="d-flex justify-content-end fs-1">
-              <div class="me-1 fw-semibold">S/.${reservation.CANTIDAD_PAGADA ?? '0.00'} DE S/.${total} pagados</div> | <div class="fw-bold ms-1">S/.${pending} pendiente</div>
-            </div>
-          </div>
+    <div class="card-reservation ${statusClass} bg-white rounded-4 p-4 mb-3 shadow-sm position-relative">
+        <div class="status-badge ${statusClass} position-absolute bg-${statusBg} fs-4 text-white px-3 py-2 rounded-bottom-3 fw-bold text-uppercase" style="top: -8px; right: 50px;">
+            ${statusText}
         </div>
-        <div class="d-flex">
-          <div class="me-3"> 
-            <div class="d-flex mb-2">
-              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" ${nothingPending ? 'disabled' : ''} style="height: 50px; width: 50px;" onclick="onAddAmountClick(${reservation.CODIGO})">
-                <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
-              </button>
-              <button type="button" class="ms-3 btn btn-danger rounded-4 d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onReturnAmountClick(${reservation.CODIGO})" ${noAmountPaid ? 'disabled': ''}>
-                <i class="fa-solid fa-money-bill-1-wave fs-3"></i>
-              </button>            
+        
+        <div class="d-flex justify-content-between align-items-start mb-4 mt-4">
+            <div class="w-100">
+                <h5 class="w-100 break-text fw-bold mb-2 display-3">${reservation.REPRESENTANTE}</h5>
+                <div class="passengers-badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
+                    <span class="fw-bold display-5">${reservation.CANTIDAD_PASAJES ?? '0'}</span>
+                    <span class="text-uppercase fw-semibold fs-1">Pasaje(s)</span>
+                </div>
             </div>
-            <div class="d-flex">
-              <button type="button" class="btn btn-success rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onAddPassengersClick(${reservation.CODIGO})" ${noSeatsFree ? 'disabled' : ''}>
-                <i class="fa-solid fa-plus fs-4 me-1"></i>
-                <i class="fa-solid fa-person fs-4"></i>
-              </button>
-              <button type="button" class="ms-3 btn btn-danger rounded-4 text-center d-flex justify-content-center align-items-center" style="height: 50px; width: 50px;" onclick="onRemovePassengersClick(${reservation.CODIGO})" ${noUsedSeats ? 'disabled': ''}>
-                <i class="fa-solid fa-minus fs-5 me-1"></i>
-                <i class="fa-solid fa-person fs-4"></i>
-              </button>            
-            </div>
-          </div>
-          <div class="d-flex justify-content-center align-items-center border-start">
-            <button type="button" class="btn btn-danger ms-3" onclick="onRemoveReservationClick(${reservation.CODIGO})">
-              <i class="fa-solid fa-trash"></i>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-2" onclick="onRemoveReservationClick(${reservation.CODIGO})" style="width: 36px; height: 36px;">
+                <i class="fa-solid fa-trash fs-6"></i>
             </button>
-          </div>
         </div>
-      </div>   
+        
+        <div class="cost-info bg-light rounded-3 p-3 mb-3">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="text-center p-3 rounded-3 border border-2 border-success bg-success bg-opacity-10">
+                        <div class="fw-bold display-5 text-success">S/. ${total}</div>
+                        <div class="fs-4 text-muted text-uppercase fw-semibold">Total</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center p-3 rounded-3 border border-2 border-info bg-info bg-opacity-10">
+                        <div class="display-5 fw-bold text-info">S/. ${reservation.CANTIDAD_PAGADA ?? '0.00'}</div>
+                        <div class="text-muted text-uppercase fs-4 fw-semibold">Pagado</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="pending-amount text-center p-3 rounded-3 border border-2 border-${isPaid ? 'success' : 'warning'} bg-${isPaid ? 'success' : 'warning'} bg-opacity-10 mb-4">
+            <div class="fw-bold display-3 ">S/. ${pending}</div>
+            <div class="text-uppercase fw-semibold fs-3 text-muted">Pendiente</div>
+        </div>
+        
+        <div class="row g-2">
+            <div class="col-12 d-flex">
+                <div class="col-4 text-center text-muted text-uppercase fw-semibold fs-1">Pasajeros</div>
+                <div class="d-flex gap-1 col-8">
+                    <button type="button" class="col-6 btn btn-success btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" onclick="onAddPassengersClick(${reservation.CODIGO})" ${noSeatsFree ? 'disabled' : ''}>
+                        <i class="fa-solid fa-plus fs-2"></i>
+                        <span class="fw-semibold fs-1">Agregar</span>
+                    </button>
+                    <button type="button" class="col-6 btn btn-danger btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" onclick="onRemovePassengersClick(${reservation.CODIGO})" ${noUsedSeats ? 'disabled': ''}>
+                        <i class="fa-solid fa-minus fs-2"></i>
+                        <span class="fw-semibold fs-1">Quitar</span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-12 d-flex">
+                <div class="col-4 text-center text-muted text-uppercase fw-semibold fs-1">Pagos</div>
+                <div class="d-flex gap-1 col-8">
+                    <button type="button" class="col-6 btn btn-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" ${nothingPending ? 'disabled' : ''} onclick="onAddAmountClick(${reservation.CODIGO})">
+                        <i class="fa-solid fa-plus fs-2"></i>
+                        <span class="fw-semibold fs-1">Pago</span>
+                    </button>
+                    <button type="button" class="col-6 btn btn-danger btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" onclick="onReturnAmountClick(${reservation.CODIGO})" ${noAmountPaid ? 'disabled': ''}>
+                        <i class="fa-solid fa-minus fs-2"></i>
+                        <span class="fw-semibold fs-1">Pago</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     `;
     return html;
-  }
+}
   async function removeReservationConfirm(reservationId) {
     loading();
     await deleteReservationById(reservationId);
